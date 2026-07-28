@@ -22,7 +22,7 @@ Uma biblioteca de interface gráfica moderna, fluida e altamente customizável p
 
 Para carregar a biblioteca no seu script, utilize a linha abaixo:
 
-    local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
+    local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/vortex-py/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
 
 ---
 
