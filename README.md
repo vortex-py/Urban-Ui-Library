@@ -21,7 +21,7 @@ Uma biblioteca de interface gráfica moderna, fluida e altamente customizável p
 
 Para carregar a biblioteca no seu script, utilize a linha abaixo:
 
-    local WIND = loadstring(game:HttpGet("[https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua](https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua)"))()
+    local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
 
 ---
 
@@ -156,110 +156,11 @@ Abre uma caixa de diálogo estilo pop-up modal para confirmações de ações.
 
 ---
 
-## 📋 Script Exemplo Completo (Todos os Elementos)
+## 📋 Script Exemplo Completo
 
-Copie e cole o script abaixo diretamente no seu arquivo `example.lua` para testar **todos** os elementos juntos:
+Você pode conferir o script de exemplo completo pronto para teste acessando o arquivo direto no repositório:
 
-    local WIND = loadstring(game:HttpGet("[https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua](https://raw.githubusercontent.com/jone-nunes/Urban-Ui-Library/refs/heads/main/load-ui.lua)"))()
-
-    -- 1. Criar Janela Principal
-    local Window = WIND:CreateWindow({
-        Title = "URBAN HUB",
-        SubTitle = "by vortex_py",
-        Size = UDim2.new(0, 520, 0, 350),
-        Icon = "rbxassetid://80788381547970",
-        FloatIcon = "rbxassetid://80788381547970",
-        FloatIconSize = 36
-    })
-
-    -- Notificação Inicial
-    WIND:Notify({
-        Title = "Urban UI V2.5",
-        Content = "Todos os elementos carregados com sucesso!",
-        Duration = 4
-    })
-
-    -- 2. Criar Abas
-    local MainTab = Window:CreateTab("Principal")
-    local ConfigTab = Window:CreateTab("Configurações")
-
-    ---------------------------------------------------------
-    -- ABA 1: ELEMENTOS DIVERSOS
-    ---------------------------------------------------------
-    local SecElements = MainTab:AddSection("Demonstração de Elementos")
-
-    -- Toggle ON / OFF
-    SecElements:AddToggle("Ativar Auto Farm", false, function(state)
-        if state then
-            print("ON")
-        else
-            print("OFF")
-        end
-    end)
-
-    -- Slider
-    SecElements:AddSlider("Velocidade do Jogador", 16, 200, 16, function(value)
-        print("Slider alterado para:", value)
-        local char = game.Players.LocalPlayer.Character
-        if char and char:FindFirstChild("Humanoid") then
-            char.Humanoid.WalkSpeed = value
-        end
-    end)
-
-    -- Dropdown
-    SecElements:AddDropdown("Selecionar Modo", {"Modo Fácil", "Modo Médio", "Modo Difícil"}, function(selected)
-        print("Dropdown selecionado:", selected)
-    end)
-
-    -- Keybind
-    SecElements:AddKeybind("Atalho de Ação", Enum.KeyCode.E, function(key)
-        print("Keybind acionado:", key.Name)
-    end)
-
-    -- TextBox
-    SecElements:AddTextBox("Inserir Código", "Digite o código...", function(text)
-        print("Texto enviado:", text)
-    end)
-
-    ---------------------------------------------------------
-    -- ABA 2: BOTÕES, DIÁLOGOS E NOTIFICAÇÕES
-    ---------------------------------------------------------
-    local SecActions = ConfigTab:AddSection("Ações & Modais")
-
-    -- Botão
-    SecActions:AddButton("Disparar Notificação", function()
-        WIND:Notify({
-            Title = "Notificação Teste",
-            Content = "Você clicou no botão de notificação!",
-            Duration = 3
-        })
-    end)
-
-    -- Botão para Diálogo
-    SecActions:AddButton("Abrir Diálogo Modal", function()
-        Window:Dialog({
-            Title = "Caixa de Confirmação",
-            Content = "Deseja realmente aplicar estas alterações?",
-            Buttons = {
-                {
-                    Title = "Sim",
-                    Callback = function()
-                        print("Ação confirmada pelo Diálogo!")
-                    end
-                },
-                {
-                    Title = "Não",
-                    Callback = function()
-                        print("Ação cancelada pelo Diálogo!")
-                    end
-                }
-            }
-        }
-    })
-    end)
-
-    -- Parágrafo Informativo
-    SecActions:AddParagraph("Sobre a UI", "Criada e desenvolvida por vortex_py com foco em design moderno e responsivo.")
+🔗 **[Ver Exemplo no GitHub (example.lua)](https://github.com/jone-nunes/Urban-Ui-Library/blob/main/example.lua)**
 
 ---
 
