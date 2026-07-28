@@ -3,8 +3,8 @@
 Uma biblioteca de interface gráfica moderna, fluida e altamente customizável para Roblox, inspirada no estilo *Wind UI*. Desenvolvida para ser simples de integrar e visualmente elegante.
 
 > 👤 **Criado por:** `vortex_py`
-
----
+obs: caso tiver bugado use o site: **[docs Urban ui library]https://urban-ui-docs.netlify.app/**
+--
 
 ## ✨ Recursos Principais
 
