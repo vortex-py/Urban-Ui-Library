@@ -5,7 +5,7 @@ Uma biblioteca de interface gráfica moderna, fluida e altamente customizável p
 > 👤 **Criado por:** `vortex_py`
 --
 
-*obs: caso tiver bugado use o site: **[docs Urban ui library]https://urban-ui-docs.netlify.app/***
+*obs: caso tiver bugado use o site: **[docs Urban ui library]: https://urban-ui-docs.netlify.app/***
 
 ## ✨ Recursos Principais
 
