@@ -10,12 +10,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Tema Inspirado na Wind UI (Amarelo / Dark Glass)
 ---------------------------------------------------------
 local Theme = {
-	Accent = Color3.fromRGB(255, 190, 0),        -- Amarelo vibrante Wind
+	Accent = Color3.fromRGB(255, 190, 0), -- Amarelo vibrante Wind
 	AccentDark = Color3.fromRGB(200, 145, 0),
-	Background = Color3.fromRGB(15, 16, 20),     -- Fundo escuro
-	Sidebar = Color3.fromRGB(20, 22, 28),        -- Lateral
-	Section = Color3.fromRGB(25, 28, 36),        -- Cards / Seções
-	Element = Color3.fromRGB(33, 37, 48),        -- Botões/Inputs
+	Background = Color3.fromRGB(15, 16, 20), -- Fundo escuro
+	Sidebar = Color3.fromRGB(20, 22, 28), -- Lateral
+	Section = Color3.fromRGB(25, 28, 36), -- Cards / Seções
+	Element = Color3.fromRGB(33, 37, 48), -- Botões/Inputs
 	ElementHover = Color3.fromRGB(42, 47, 60),
 	Text = Color3.fromRGB(240, 242, 248),
 	TextDark = Color3.fromRGB(140, 145, 165),
@@ -23,7 +23,101 @@ local Theme = {
 }
 
 local Library = {}
+local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
+-- Container global para Notificações (Garante que WIND:Notify funciona a qualquer momento)
+local notifyScreenGui = playerGui:FindFirstChild("WindUiNotifications")
+if not notifyScreenGui then
+	notifyScreenGui = Instance.new("ScreenGui")
+	notifyScreenGui.Name = "WindUiNotifications"
+	notifyScreenGui.ResetOnSpawn = false
+	notifyScreenGui.Parent = playerGui
+end
+
+local notifyHolder = notifyScreenGui:FindFirstChild("NotifyHolder")
+if not notifyHolder then
+	notifyHolder = Instance.new("Frame")
+	notifyHolder.Name = "NotifyHolder"
+	notifyHolder.Size = UDim2.new(0, 240, 1, -20)
+	notifyHolder.Position = UDim2.new(1, -250, 0, 10)
+	notifyHolder.BackgroundTransparency = 1
+	notifyHolder.Parent = notifyScreenGui
+
+	local notifyLayout = Instance.new("UIListLayout")
+	notifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	notifyLayout.Padding = UDim.new(0, 8)
+	notifyLayout.Parent = notifyHolder
+end
+
+---------------------------------------------------------
+-- Sistema Global de Toast Notifications
+---------------------------------------------------------
+function Library:Notify(notifConfig)
+	notifConfig = notifConfig or {}
+	local nTitle = notifConfig.Title or "Notificação"
+	local nDesc = notifConfig.Content or ""
+	local duration = notifConfig.Duration or 3
+
+	local toast = Instance.new("Frame")
+	toast.Size = UDim2.new(1, 0, 0, 50)
+	toast.BackgroundColor3 = Theme.Section
+	toast.BackgroundTransparency = 1
+	toast.Parent = notifyHolder
+
+	local tCorner = Instance.new("UICorner")
+	tCorner.CornerRadius = UDim.new(0, 8)
+	tCorner.Parent = toast
+
+	local tStroke = Instance.new("UIStroke")
+	tStroke.Color = Theme.Accent
+	tStroke.Thickness = 1
+	tStroke.Transparency = 1
+	tStroke.Parent = toast
+
+	local tTitle = Instance.new("TextLabel")
+	tTitle.Size = UDim2.new(1, -16, 0, 18)
+	tTitle.Position = UDim2.new(0, 10, 0, 6)
+	tTitle.BackgroundTransparency = 1
+	tTitle.Font = Enum.Font.GothamBold
+	tTitle.Text = nTitle
+	tTitle.TextColor3 = Theme.Accent
+	tTitle.TextSize = 12
+	tTitle.TextXAlignment = Enum.TextXAlignment.Left
+	tTitle.TextTransparency = 1
+	tTitle.Parent = toast
+
+	local tDesc = Instance.new("TextLabel")
+	tDesc.Size = UDim2.new(1, -16, 0, 18)
+	tDesc.Position = UDim2.new(0, 10, 0, 24)
+	tDesc.BackgroundTransparency = 1
+	tDesc.Font = Enum.Font.Gotham
+	tDesc.Text = nDesc
+	tDesc.TextColor3 = Theme.Text
+	tDesc.TextSize = 11
+	tDesc.TextXAlignment = Enum.TextXAlignment.Left
+	tDesc.TextTransparency = 1
+	tDesc.Parent = toast
+
+	TweenService:Create(toast, tweenInfo, {BackgroundTransparency = 0}):Play()
+	TweenService:Create(tStroke, tweenInfo, {Transparency = 0.5}):Play()
+	TweenService:Create(tTitle, tweenInfo, {TextTransparency = 0}):Play()
+	TweenService:Create(tDesc, tweenInfo, {TextTransparency = 0}):Play()
+
+	task.delay(duration, function()
+		local close = TweenService:Create(toast, tweenInfo, {BackgroundTransparency = 1})
+		TweenService:Create(tStroke, tweenInfo, {Transparency = 1}):Play()
+		TweenService:Create(tTitle, tweenInfo, {TextTransparency = 1}):Play()
+		TweenService:Create(tDesc, tweenInfo, {TextTransparency = 1}):Play()
+		close:Play()
+		close.Completed:Connect(function()
+			toast:Destroy()
+		end)
+	end)
+end
+
+---------------------------------------------------------
+-- Função Principal de Criar Janela
+---------------------------------------------------------
 function Library:CreateWindow(config)
 	config = config or {}
 	local title = config.Title or "WIND UI"
@@ -40,8 +134,6 @@ function Library:CreateWindow(config)
 	blur.Name = "WindBlur"
 	blur.Size = 0
 	blur.Parent = Lighting
-
-	local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 	-- Frame Principal
 	local MAIN_SIZE = UDim2.new(0, 620, 0, 400)
@@ -65,84 +157,6 @@ function Library:CreateWindow(config)
 	mainStroke.Parent = mainFrame
 
 	---------------------------------------------------------
-	-- Sistema de Toast Notifications (Notificações)
-	---------------------------------------------------------
-	local notifyHolder = Instance.new("Frame")
-	notifyHolder.Name = "NotifyHolder"
-	notifyHolder.Size = UDim2.new(0, 240, 1, -20)
-	notifyHolder.Position = UDim2.new(1, -250, 0, 10)
-	notifyHolder.BackgroundTransparency = 1
-	notifyHolder.Parent = screenGui
-
-	local notifyLayout = Instance.new("UIListLayout")
-	notifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	notifyLayout.Padding = UDim.new(0, 8)
-	notifyLayout.Parent = notifyHolder
-
-	function Library:Notify(notifConfig)
-		notifConfig = notifConfig or {}
-		local nTitle = notifConfig.Title or "Notificação"
-		local nDesc = notifConfig.Content or ""
-		local duration = notifConfig.Duration or 3
-
-		local toast = Instance.new("Frame")
-		toast.Size = UDim2.new(1, 0, 0, 50)
-		toast.BackgroundColor3 = Theme.Section
-		toast.BackgroundTransparency = 1
-		toast.Parent = notifyHolder
-
-		local tCorner = Instance.new("UICorner")
-		tCorner.CornerRadius = UDim.new(0, 8)
-		tCorner.Parent = toast
-
-		local tStroke = Instance.new("UIStroke")
-		tStroke.Color = Theme.Accent
-		tStroke.Thickness = 1
-		tStroke.Transparency = 1
-		tStroke.Parent = toast
-
-		local tTitle = Instance.new("TextLabel")
-		tTitle.Size = UDim2.new(1, -16, 0, 18)
-		tTitle.Position = UDim2.new(0, 10, 0, 6)
-		tTitle.BackgroundTransparency = 1
-		tTitle.Font = Enum.Font.GothamBold
-		tTitle.Text = nTitle
-		tTitle.TextColor3 = Theme.Accent
-		tTitle.TextSize = 12
-		tTitle.TextXAlignment = Enum.TextXAlignment.Left
-		tTitle.TextTransparency = 1
-		tTitle.Parent = toast
-
-		local tDesc = Instance.new("TextLabel")
-		tDesc.Size = UDim2.new(1, -16, 0, 18)
-		tDesc.Position = UDim2.new(0, 10, 0, 24)
-		tDesc.BackgroundTransparency = 1
-		tDesc.Font = Enum.Font.Gotham
-		tDesc.Text = nDesc
-		tDesc.TextColor3 = Theme.Text
-		tDesc.TextSize = 11
-		tDesc.TextXAlignment = Enum.TextXAlignment.Left
-		tDesc.TextTransparency = 1
-		tDesc.Parent = toast
-
-		TweenService:Create(toast, tweenInfo, {BackgroundTransparency = 0}):Play()
-		TweenService:Create(tStroke, tweenInfo, {Transparency = 0.5}):Play()
-		TweenService:Create(tTitle, tweenInfo, {TextTransparency = 0}):Play()
-		TweenService:Create(tDesc, tweenInfo, {TextTransparency = 0}):Play()
-
-		task.delay(duration, function()
-			local close = TweenService:Create(toast, tweenInfo, {BackgroundTransparency = 1})
-			TweenService:Create(tStroke, tweenInfo, {Transparency = 1}):Play()
-			TweenService:Create(tTitle, tweenInfo, {TextTransparency = 1}):Play()
-			TweenService:Create(tDesc, tweenInfo, {TextTransparency = 1}):Play()
-			close:Play()
-			close.Completed:Connect(function()
-				toast:Destroy()
-			end)
-		end)
-	end
-
-	---------------------------------------------------------
 	-- Sistema Drag (Arrastar Janela)
 	---------------------------------------------------------
 	local dragging, dragStart, startPos
@@ -153,12 +167,14 @@ function Library:CreateWindow(config)
 			startPos = mainFrame.Position
 		end
 	end)
+
 	UserInputService.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
 			mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
+
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
@@ -179,7 +195,6 @@ function Library:CreateWindow(config)
 	sideCorner.CornerRadius = UDim.new(0, 14)
 	sideCorner.Parent = sidebar
 
-	-- Fix visual canto direito da sidebar
 	local sideFix = Instance.new("Frame")
 	sideFix.Size = UDim2.new(0, 10, 1, 0)
 	sideFix.Position = UDim2.new(1, -10, 0, 0)
@@ -296,7 +311,7 @@ function Library:CreateWindow(config)
 	floatIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
 	floatIcon.AnchorPoint = Vector2.new(0.5, 0.5)
 	floatIcon.BackgroundTransparency = 1
-	floatIcon.Image = "rbxassetid://10723415903" -- Ícone Wind Estilo Sparkles
+	floatIcon.Image = "rbxassetid://10723415903"
 	floatIcon.ImageColor3 = Theme.Accent
 	floatIcon.Parent = toggleButton
 
@@ -309,12 +324,14 @@ function Library:CreateWindow(config)
 			floatPosStart = toggleButton.Position
 		end
 	end)
+
 	UserInputService.InputChanged:Connect(function(input)
 		if floatDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - floatStart
 			toggleButton.Position = UDim2.new(floatPosStart.X.Scale, floatPosStart.X.Offset + delta.X, floatPosStart.Y.Scale, floatPosStart.Y.Offset + delta.Y)
 		end
 	end)
+
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			floatDrag = false
@@ -340,6 +357,7 @@ function Library:CreateWindow(config)
 
 	minBtn.MouseButton1Click:Connect(toggleUI)
 	toggleButton.MouseButton1Click:Connect(toggleUI)
+
 	closeBtn.MouseButton1Click:Connect(function()
 		screenGui:Destroy()
 		blur:Destroy()
@@ -360,7 +378,7 @@ function Library:CreateWindow(config)
 		tabBtn.BackgroundColor3 = Theme.Section
 		tabBtn.BackgroundTransparency = 1
 		tabBtn.Font = Enum.Font.GothamMedium
-		tabBtn.Text = "  " .. tabName
+		tabBtn.Text = " " .. tabName
 		tabBtn.TextColor3 = Theme.TextDark
 		tabBtn.TextSize = 12
 		tabBtn.TextXAlignment = Enum.TextXAlignment.Left
@@ -404,7 +422,7 @@ function Library:CreateWindow(config)
 		if #tabs == 1 then selectTab() end
 
 		---------------------------------------------------------
-		-- API de Seções (Wind UI Style Cards)
+		-- API de Seções
 		---------------------------------------------------------
 		local TabAPI = {}
 
@@ -606,15 +624,17 @@ function Library:CreateWindow(config)
 						update(inp)
 					end
 				end)
+
 				UserInputService.InputEnded:Connect(function(inp)
 					if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then sliding = false end
 				end)
+
 				UserInputService.InputChanged:Connect(function(inp)
 					if sliding and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then update(inp) end
 				end)
 			end
 
-			-- 4. TextBox (Input de Texto)
+			-- 4. TextBox
 			function SectionAPI:AddTextBox(text, placeholder, callback)
 				callback = callback or function() end
 
