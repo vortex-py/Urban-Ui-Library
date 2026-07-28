@@ -122,11 +122,13 @@ function Library:CreateWindow(config)
 	config = config or {}
 	local title = config.Title or "URBAN UI"
 	local subTitle = config.SubTitle or "v2.0 Premium"
-	local windowIcon = config.Icon or "rbxassetid://10723415903"
-	local floatIconId = config.FloatIcon or "rbxassetid://10723415903"
+	local windowIcon = config.Icon or "rbxassetid://80788381547970"
+	local floatIconId = config.FloatIcon or "rbxassetid://80788381547970"
 	
-	-- Tamanho personalizável (Padrão mais compacto: 520x340)
-	local MAIN_SIZE = config.Size or UDim2.new(0, 520, 0, 340)
+	-- Tamanho personalizável da imagem interna do botão flutuante
+	local floatIconSize = config.FloatIconSize or 32 
+	
+	local MAIN_SIZE = config.Size or UDim2.new(0, 540, 0, 360)
 
 	-- Container de Gui
 	local screenGui = Instance.new("ScreenGui")
@@ -161,7 +163,7 @@ function Library:CreateWindow(config)
 	mainStroke.Parent = mainFrame
 
 	---------------------------------------------------------
-	-- Sistema Drag & Resize (Arrastar e Redimensionar)
+	-- Drag & Resize
 	---------------------------------------------------------
 	local dragging, dragStart, startPos
 	mainFrame.InputBegan:Connect(function(input)
@@ -185,7 +187,7 @@ function Library:CreateWindow(config)
 		end
 	end)
 
-	-- Linha/Alça de Redimensionamento no Canto Inferior Direito
+	-- Alça de Redimensionamento no Canto Inferior Direito
 	local resizeGrip = Instance.new("Frame")
 	resizeGrip.Name = "ResizeGrip"
 	resizeGrip.Size = UDim2.new(0, 16, 0, 16)
@@ -216,8 +218,8 @@ function Library:CreateWindow(config)
 	UserInputService.InputChanged:Connect(function(input)
 		if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - resizeStart
-			local newX = math.max(380, startSize.X.Offset + delta.X)
-			local newY = math.max(260, startSize.Y.Offset + delta.Y)
+			local newX = math.max(420, startSize.X.Offset + delta.X)
+			local newY = math.max(280, startSize.Y.Offset + delta.Y)
 			mainFrame.Size = UDim2.new(0, newX, 0, newY)
 			MAIN_SIZE = mainFrame.Size
 		end
@@ -230,11 +232,11 @@ function Library:CreateWindow(config)
 	end)
 
 	---------------------------------------------------------
-	-- Sidebar (Lateral) & Header
+	-- Sidebar (Lateral) Header, Pesquisa & Perfil do Player
 	---------------------------------------------------------
 	local sidebar = Instance.new("Frame")
 	sidebar.Name = "Sidebar"
-	sidebar.Size = UDim2.new(0, 150, 1, 0)
+	sidebar.Size = UDim2.new(0, 160, 1, 0)
 	sidebar.BackgroundColor3 = Theme.Sidebar
 	sidebar.BorderSizePixel = 0
 	sidebar.Parent = mainFrame
@@ -250,7 +252,7 @@ function Library:CreateWindow(config)
 	sideFix.BorderSizePixel = 0
 	sideFix.Parent = sidebar
 
-	-- Ícone da UI (À esquerda do Título)
+	-- Ícone da UI (Esquerda do Título)
 	local titleIcon = Instance.new("ImageLabel")
 	titleIcon.Name = "TitleIcon"
 	titleIcon.Size = UDim2.new(0, 20, 0, 20)
@@ -262,19 +264,19 @@ function Library:CreateWindow(config)
 
 	-- Logo / Título
 	local logoTitle = Instance.new("TextLabel")
-	logoTitle.Size = UDim2.new(1, -40, 0, 20)
-	logoTitle.Position = UDim2.new(0, 38, 0, 14)
+	logoTitle.Size = UDim2.new(1, -42, 0, 18)
+	logoTitle.Position = UDim2.new(0, 38, 0, 12)
 	logoTitle.BackgroundTransparency = 1
 	logoTitle.Font = Enum.Font.GothamBold
 	logoTitle.Text = title
 	logoTitle.TextColor3 = Theme.Accent
-	logoTitle.TextSize = 14
+	logoTitle.TextSize = 13
 	logoTitle.TextXAlignment = Enum.TextXAlignment.Left
 	logoTitle.Parent = sidebar
 
 	local logoSub = Instance.new("TextLabel")
-	logoSub.Size = UDim2.new(1, -40, 0, 14)
-	logoSub.Position = UDim2.new(0, 38, 0, 32)
+	logoSub.Size = UDim2.new(1, -42, 0, 12)
+	logoSub.Position = UDim2.new(0, 38, 0, 28)
 	logoSub.BackgroundTransparency = 1
 	logoSub.Font = Enum.Font.Gotham
 	logoSub.Text = subTitle
@@ -283,10 +285,34 @@ function Library:CreateWindow(config)
 	logoSub.TextXAlignment = Enum.TextXAlignment.Left
 	logoSub.Parent = sidebar
 
+	-- Barra de Pesquisa de Abas
+	local searchFrame = Instance.new("Frame")
+	searchFrame.Name = "SearchFrame"
+	searchFrame.Size = UDim2.new(1, -16, 0, 24)
+	searchFrame.Position = UDim2.new(0, 8, 0, 48)
+	searchFrame.BackgroundColor3 = Theme.Section
+	searchFrame.Parent = sidebar
+
+	local searchCorner = Instance.new("UICorner")
+	searchCorner.CornerRadius = UDim.new(0, 6)
+	searchCorner.Parent = searchFrame
+
+	local searchBox = Instance.new("TextBox")
+	searchBox.Size = UDim2.new(1, -12, 1, 0)
+	searchBox.Position = UDim2.new(0, 6, 0, 0)
+	searchBox.BackgroundTransparency = 1
+	searchBox.Font = Enum.Font.Gotham
+	searchBox.PlaceholderText = "Pesquisar aba..."
+	searchBox.Text = ""
+	searchBox.TextColor3 = Theme.Text
+	searchBox.TextSize = 10
+	searchBox.TextXAlignment = Enum.TextXAlignment.Left
+	searchBox.Parent = searchFrame
+
 	-- Container das Abas
 	local tabHolder = Instance.new("ScrollingFrame")
-	tabHolder.Size = UDim2.new(1, 0, 1, -60)
-	tabHolder.Position = UDim2.new(0, 0, 0, 56)
+	tabHolder.Size = UDim2.new(1, 0, 1, -126)
+	tabHolder.Position = UDim2.new(0, 0, 0, 78)
 	tabHolder.BackgroundTransparency = 1
 	tabHolder.ScrollBarThickness = 0
 	tabHolder.Parent = sidebar
@@ -297,12 +323,59 @@ function Library:CreateWindow(config)
 	tabList.Parent = tabHolder
 
 	---------------------------------------------------------
+	-- Card de Perfil do Jogador (Embaixo da Sidebar)
+	---------------------------------------------------------
+	local playerCard = Instance.new("Frame")
+	playerCard.Name = "PlayerCard"
+	playerCard.Size = UDim2.new(1, -16, 0, 38)
+	playerCard.Position = UDim2.new(0, 8, 1, -44)
+	playerCard.BackgroundColor3 = Theme.Section
+	playerCard.Parent = sidebar
+
+	local cardCorner = Instance.new("UICorner")
+	cardCorner.CornerRadius = UDim.new(0, 8)
+	cardCorner.Parent = playerCard
+
+	local playerAvatar = Instance.new("ImageLabel")
+	playerAvatar.Size = UDim2.new(0, 26, 0, 26)
+	playerAvatar.Position = UDim2.new(0, 6, 0.5, -13)
+	playerAvatar.BackgroundTransparency = 1
+	playerAvatar.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+	playerAvatar.Parent = playerCard
+
+	local avatarCorner = Instance.new("UICorner")
+	avatarCorner.CornerRadius = UDim.new(1, 0)
+	avatarCorner.Parent = playerAvatar
+
+	local pName = Instance.new("TextLabel")
+	pName.Size = UDim2.new(1, -42, 0, 14)
+	pName.Position = UDim2.new(0, 38, 0, 6)
+	pName.BackgroundTransparency = 1
+	pName.Font = Enum.Font.GothamBold
+	pName.Text = player.DisplayName
+	pName.TextColor3 = Theme.Text
+	pName.TextSize = 10
+	pName.TextXAlignment = Enum.TextXAlignment.Left
+	pName.Parent = playerCard
+
+	local pUser = Instance.new("TextLabel")
+	pUser.Size = UDim2.new(1, -42, 0, 12)
+	pUser.Position = UDim2.new(0, 38, 0, 20)
+	pUser.BackgroundTransparency = 1
+	pUser.Font = Enum.Font.Gotham
+	pUser.Text = "@" .. player.Name
+	pUser.TextColor3 = Theme.TextDark
+	pUser.TextSize = 8
+	pUser.TextXAlignment = Enum.TextXAlignment.Left
+	pUser.Parent = playerCard
+
+	---------------------------------------------------------
 	-- TopBar & Container de Conteúdo
 	---------------------------------------------------------
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, -150, 0, 40)
-	topBar.Position = UDim2.new(0, 150, 0, 0)
+	topBar.Size = UDim2.new(1, -160, 0, 40)
+	topBar.Position = UDim2.new(0, 160, 0, 0)
 	topBar.BackgroundTransparency = 1
 	topBar.Parent = mainFrame
 
@@ -341,16 +414,16 @@ function Library:CreateWindow(config)
 	-- Container de Páginas
 	local container = Instance.new("Frame")
 	container.Name = "Container"
-	container.Size = UDim2.new(1, -150, 1, -40)
-	container.Position = UDim2.new(0, 150, 0, 40)
+	container.Size = UDim2.new(1, -160, 1, -40)
+	container.Position = UDim2.new(0, 160, 0, 40)
 	container.BackgroundTransparency = 1
 	container.Parent = mainFrame
 
 	---------------------------------------------------------
-	-- Botão Flutuante Redondo (Toggle Icon)
+	-- Botão Flutuante Redondo (Toggle Icon Customizável)
 	---------------------------------------------------------
 	local toggleButton = Instance.new("ImageButton")
-	toggleButton.Size = UDim2.new(0, 48, 0, 48)
+	toggleButton.Size = UDim2.new(0, 50, 0, 50)
 	toggleButton.Position = UDim2.new(0.05, 0, 0.8, 0)
 	toggleButton.BackgroundColor3 = Theme.Background
 	toggleButton.Parent = screenGui
@@ -365,7 +438,7 @@ function Library:CreateWindow(config)
 	floatStroke.Parent = toggleButton
 
 	local floatIcon = Instance.new("ImageLabel")
-	floatIcon.Size = UDim2.new(0, 24, 0, 24)
+	floatIcon.Size = UDim2.new(0, floatIconSize, 0, floatIconSize)
 	floatIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
 	floatIcon.AnchorPoint = Vector2.new(0.5, 0.5)
 	floatIcon.BackgroundTransparency = 1
@@ -421,14 +494,121 @@ function Library:CreateWindow(config)
 		blur:Destroy()
 	end)
 
-	-- Ativar Blur Inicial
 	TweenService:Create(blur, tweenInfo, {Size = 15}):Play()
 
 	---------------------------------------------------------
-	-- API do Window & Tabs
+	-- API do Window, Diálogo e Tabs
 	---------------------------------------------------------
 	local WindowAPI = {}
 	local tabs = {}
+
+	-- Função de Janela de Diálogo / Modal
+	function WindowAPI:Dialog(dialogConfig)
+		dialogConfig = dialogConfig or {}
+		local dTitle = dialogConfig.Title or "Confirmação"
+		local dContent = dialogConfig.Content or "Tem certeza que deseja prosseguir?"
+		local buttons = dialogConfig.Buttons or {
+			{Title = "Confirmar", Callback = function() end},
+			{Title = "Cancelar", Callback = function() end}
+		}
+
+		local overlay = Instance.new("Frame")
+		overlay.Size = UDim2.new(1, 0, 1, 0)
+		overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		overlay.BackgroundTransparency = 1
+		overlay.ZIndex = 20
+		overlay.Parent = mainFrame
+
+		local dialogBox = Instance.new("Frame")
+		dialogBox.Size = UDim2.new(0, 280, 0, 140)
+		dialogBox.Position = UDim2.new(0.5, 0, 0.5, 0)
+		dialogBox.AnchorPoint = Vector2.new(0.5, 0.5)
+		dialogBox.BackgroundColor3 = Theme.Sidebar
+		dialogBox.ZIndex = 21
+		dialogBox.Parent = overlay
+
+		local dCorner = Instance.new("UICorner")
+		dCorner.CornerRadius = UDim.new(0, 10)
+		dCorner.Parent = dialogBox
+
+		local dStroke = Instance.new("UIStroke")
+		dStroke.Color = Theme.Accent
+		dStroke.Thickness = 1
+		dStroke.Parent = dialogBox
+
+		local titleLb = Instance.new("TextLabel")
+		titleLb.Size = UDim2.new(1, -20, 0, 20)
+		titleLb.Position = UDim2.new(0, 10, 0, 10)
+		titleLb.BackgroundTransparency = 1
+		titleLb.Font = Enum.Font.GothamBold
+		titleLb.Text = dTitle
+		titleLb.TextColor3 = Theme.Accent
+		titleLb.TextSize = 12
+		titleLb.ZIndex = 22
+		titleLb.Parent = dialogBox
+
+		local contentLb = Instance.new("TextLabel")
+		contentLb.Size = UDim2.new(1, -20, 0, 40)
+		contentLb.Position = UDim2.new(0, 10, 0, 32)
+		contentLb.BackgroundTransparency = 1
+		contentLb.Font = Enum.Font.Gotham
+		contentLb.Text = dContent
+		contentLb.TextColor3 = Theme.Text
+		contentLb.TextSize = 10
+		contentLb.TextWrapped = true
+		contentLb.ZIndex = 22
+		contentLb.Parent = dialogBox
+
+		local btnContainer = Instance.new("Frame")
+		btnContainer.Size = UDim2.new(1, -20, 0, 30)
+		btnContainer.Position = UDim2.new(0, 10, 1, -40)
+		btnContainer.BackgroundTransparency = 1
+		btnContainer.ZIndex = 22
+		btnContainer.Parent = dialogBox
+
+		local btnLayout = Instance.new("UIListLayout")
+		btnLayout.FillDirection = Enum.FillDirection.Horizontal
+		btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+		btnLayout.Padding = UDim.new(0, 8)
+		btnLayout.Parent = btnContainer
+
+		TweenService:Create(overlay, tweenInfo, {BackgroundTransparency = 0.5}):Play()
+
+		for _, btnData in ipairs(buttons) do
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(0, 80, 1, 0)
+			btn.BackgroundColor3 = Theme.Element
+			btn.Font = Enum.Font.GothamMedium
+			btn.Text = btnData.Title
+			btn.TextColor3 = Theme.Text
+			btn.TextSize = 10
+			btn.ZIndex = 23
+			btn.Parent = btnContainer
+
+			local bCorner = Instance.new("UICorner")
+			bCorner.CornerRadius = UDim.new(0, 6)
+			bCorner.Parent = btn
+
+			btn.MouseButton1Click:Connect(function()
+				TweenService:Create(overlay, tweenInfo, {BackgroundTransparency = 1}):Play()
+				task.wait(0.2)
+				overlay:Destroy()
+				if btnData.Callback then btnData.Callback() end
+			end)
+		end
+	end
+
+	-- Lógica da Barra de Pesquisa de Abas
+	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local text = searchBox.Text:lower()
+		for _, tab in ipairs(tabs) do
+			if text == "" or tab.Name:lower():find(text) then
+				tab.Button.Visible = true
+			else
+				tab.Button.Visible = false
+			end
+		end
+	end)
 
 	function WindowAPI:CreateTab(tabName)
 		local tabBtn = Instance.new("TextButton")
@@ -475,12 +655,12 @@ function Library:CreateWindow(config)
 		end
 
 		tabBtn.MouseButton1Click:Connect(selectTab)
-		table.insert(tabs, {Button = tabBtn, Page = page})
+		table.insert(tabs, {Name = tabName, Button = tabBtn, Page = page})
 
 		if #tabs == 1 then selectTab() end
 
 		---------------------------------------------------------
-		-- API de Seções
+		-- API de Seções e Elementos
 		---------------------------------------------------------
 		local TabAPI = {}
 
@@ -525,9 +705,6 @@ function Library:CreateWindow(config)
 			end
 			secLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSecSize)
 
-			---------------------------------------------------------
-			-- ELEMENTOS URBAN UI
-			---------------------------------------------------------
 			local SectionAPI = {}
 
 			function SectionAPI:AddButton(text, callback)
