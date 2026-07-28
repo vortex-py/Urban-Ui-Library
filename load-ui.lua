@@ -10,12 +10,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Tema Inspirado na Wind UI (Amarelo / Dark Glass)
 ---------------------------------------------------------
 local Theme = {
-	Accent = Color3.fromRGB(255, 190, 0), -- Amarelo vibrante Wind
+	Accent = Color3.fromRGB(255, 190, 0),
 	AccentDark = Color3.fromRGB(200, 145, 0),
-	Background = Color3.fromRGB(15, 16, 20), -- Fundo escuro
-	Sidebar = Color3.fromRGB(20, 22, 28), -- Lateral
-	Section = Color3.fromRGB(25, 28, 36), -- Cards / Seções
-	Element = Color3.fromRGB(33, 37, 48), -- Botões/Inputs
+	Background = Color3.fromRGB(15, 16, 20),
+	Sidebar = Color3.fromRGB(20, 22, 28),
+	Section = Color3.fromRGB(25, 28, 36),
+	Element = Color3.fromRGB(33, 37, 48),
 	ElementHover = Color3.fromRGB(42, 47, 60),
 	Text = Color3.fromRGB(240, 242, 248),
 	TextDark = Color3.fromRGB(140, 145, 165),
@@ -25,7 +25,7 @@ local Theme = {
 local Library = {}
 local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
--- Container global para Notificações (Garante que WIND:Notify funciona a qualquer momento)
+-- ScreenGui Global para Notificações
 local notifyScreenGui = playerGui:FindFirstChild("WindUiNotifications")
 if not notifyScreenGui then
 	notifyScreenGui = Instance.new("ScreenGui")
@@ -120,23 +120,27 @@ end
 ---------------------------------------------------------
 function Library:CreateWindow(config)
 	config = config or {}
-	local title = config.Title or "WIND UI"
+	local title = config.Title or "URBAN UI"
 	local subTitle = config.SubTitle or "v2.0 Premium"
+	local windowIcon = config.Icon or "rbxassetid://10723415903"
+	local floatIconId = config.FloatIcon or "rbxassetid://10723415903"
+	
+	-- Tamanho personalizável (Padrão mais compacto: 520x340)
+	local MAIN_SIZE = config.Size or UDim2.new(0, 520, 0, 340)
 
 	-- Container de Gui
 	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "WindUiLibrary"
+	screenGui.Name = "UrbanUiLibrary"
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = playerGui
 
 	-- Efeito de Blur
 	local blur = Instance.new("BlurEffect")
-	blur.Name = "WindBlur"
+	blur.Name = "UrbanBlur"
 	blur.Size = 0
 	blur.Parent = Lighting
 
 	-- Frame Principal
-	local MAIN_SIZE = UDim2.new(0, 620, 0, 400)
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainFrame"
 	mainFrame.Size = MAIN_SIZE
@@ -157,7 +161,7 @@ function Library:CreateWindow(config)
 	mainStroke.Parent = mainFrame
 
 	---------------------------------------------------------
-	-- Sistema Drag (Arrastar Janela)
+	-- Sistema Drag & Resize (Arrastar e Redimensionar)
 	---------------------------------------------------------
 	local dragging, dragStart, startPos
 	mainFrame.InputBegan:Connect(function(input)
@@ -181,12 +185,56 @@ function Library:CreateWindow(config)
 		end
 	end)
 
+	-- Linha/Alça de Redimensionamento no Canto Inferior Direito
+	local resizeGrip = Instance.new("Frame")
+	resizeGrip.Name = "ResizeGrip"
+	resizeGrip.Size = UDim2.new(0, 16, 0, 16)
+	resizeGrip.Position = UDim2.new(1, -16, 1, -16)
+	resizeGrip.BackgroundTransparency = 1
+	resizeGrip.ZIndex = 10
+	resizeGrip.Parent = mainFrame
+
+	local gripIcon = Instance.new("TextLabel")
+	gripIcon.Size = UDim2.new(1, 0, 1, 0)
+	gripIcon.BackgroundTransparency = 1
+	gripIcon.Font = Enum.Font.GothamBold
+	gripIcon.Text = "◢"
+	gripIcon.TextColor3 = Theme.Accent
+	gripIcon.TextSize = 12
+	gripIcon.ZIndex = 10
+	gripIcon.Parent = resizeGrip
+
+	local resizing, resizeStart, startSize
+	resizeGrip.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = true
+			resizeStart = input.Position
+			startSize = mainFrame.Size
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - resizeStart
+			local newX = math.max(380, startSize.X.Offset + delta.X)
+			local newY = math.max(260, startSize.Y.Offset + delta.Y)
+			mainFrame.Size = UDim2.new(0, newX, 0, newY)
+			MAIN_SIZE = mainFrame.Size
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			resizing = false
+		end
+	end)
+
 	---------------------------------------------------------
 	-- Sidebar (Lateral) & Header
 	---------------------------------------------------------
 	local sidebar = Instance.new("Frame")
 	sidebar.Name = "Sidebar"
-	sidebar.Size = UDim2.new(0, 160, 1, 0)
+	sidebar.Size = UDim2.new(0, 150, 1, 0)
 	sidebar.BackgroundColor3 = Theme.Sidebar
 	sidebar.BorderSizePixel = 0
 	sidebar.Parent = mainFrame
@@ -202,26 +250,36 @@ function Library:CreateWindow(config)
 	sideFix.BorderSizePixel = 0
 	sideFix.Parent = sidebar
 
+	-- Ícone da UI (À esquerda do Título)
+	local titleIcon = Instance.new("ImageLabel")
+	titleIcon.Name = "TitleIcon"
+	titleIcon.Size = UDim2.new(0, 20, 0, 20)
+	titleIcon.Position = UDim2.new(0, 12, 0, 14)
+	titleIcon.BackgroundTransparency = 1
+	titleIcon.Image = windowIcon
+	titleIcon.ImageColor3 = Theme.Accent
+	titleIcon.Parent = sidebar
+
 	-- Logo / Título
 	local logoTitle = Instance.new("TextLabel")
-	logoTitle.Size = UDim2.new(1, -20, 0, 22)
-	logoTitle.Position = UDim2.new(0, 14, 0, 14)
+	logoTitle.Size = UDim2.new(1, -40, 0, 20)
+	logoTitle.Position = UDim2.new(0, 38, 0, 14)
 	logoTitle.BackgroundTransparency = 1
 	logoTitle.Font = Enum.Font.GothamBold
 	logoTitle.Text = title
 	logoTitle.TextColor3 = Theme.Accent
-	logoTitle.TextSize = 15
+	logoTitle.TextSize = 14
 	logoTitle.TextXAlignment = Enum.TextXAlignment.Left
 	logoTitle.Parent = sidebar
 
 	local logoSub = Instance.new("TextLabel")
-	logoSub.Size = UDim2.new(1, -20, 0, 14)
-	logoSub.Position = UDim2.new(0, 14, 0, 34)
+	logoSub.Size = UDim2.new(1, -40, 0, 14)
+	logoSub.Position = UDim2.new(0, 38, 0, 32)
 	logoSub.BackgroundTransparency = 1
 	logoSub.Font = Enum.Font.Gotham
 	logoSub.Text = subTitle
 	logoSub.TextColor3 = Theme.TextDark
-	logoSub.TextSize = 10
+	logoSub.TextSize = 9
 	logoSub.TextXAlignment = Enum.TextXAlignment.Left
 	logoSub.Parent = sidebar
 
@@ -243,8 +301,8 @@ function Library:CreateWindow(config)
 	---------------------------------------------------------
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, -160, 0, 40)
-	topBar.Position = UDim2.new(0, 160, 0, 0)
+	topBar.Size = UDim2.new(1, -150, 0, 40)
+	topBar.Position = UDim2.new(0, 150, 0, 0)
 	topBar.BackgroundTransparency = 1
 	topBar.Parent = mainFrame
 
@@ -283,13 +341,13 @@ function Library:CreateWindow(config)
 	-- Container de Páginas
 	local container = Instance.new("Frame")
 	container.Name = "Container"
-	container.Size = UDim2.new(1, -160, 1, -40)
-	container.Position = UDim2.new(0, 160, 0, 40)
+	container.Size = UDim2.new(1, -150, 1, -40)
+	container.Position = UDim2.new(0, 150, 0, 40)
 	container.BackgroundTransparency = 1
 	container.Parent = mainFrame
 
 	---------------------------------------------------------
-	-- Botão Flutuante (Toggle Icon)
+	-- Botão Flutuante Redondo (Toggle Icon)
 	---------------------------------------------------------
 	local toggleButton = Instance.new("ImageButton")
 	toggleButton.Size = UDim2.new(0, 48, 0, 48)
@@ -311,7 +369,7 @@ function Library:CreateWindow(config)
 	floatIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
 	floatIcon.AnchorPoint = Vector2.new(0.5, 0.5)
 	floatIcon.BackgroundTransparency = 1
-	floatIcon.Image = "rbxassetid://10723415903"
+	floatIcon.Image = floatIconId
 	floatIcon.ImageColor3 = Theme.Accent
 	floatIcon.Parent = toggleButton
 
@@ -374,13 +432,13 @@ function Library:CreateWindow(config)
 
 	function WindowAPI:CreateTab(tabName)
 		local tabBtn = Instance.new("TextButton")
-		tabBtn.Size = UDim2.new(1, -16, 0, 32)
+		tabBtn.Size = UDim2.new(1, -16, 0, 30)
 		tabBtn.BackgroundColor3 = Theme.Section
 		tabBtn.BackgroundTransparency = 1
 		tabBtn.Font = Enum.Font.GothamMedium
 		tabBtn.Text = " " .. tabName
 		tabBtn.TextColor3 = Theme.TextDark
-		tabBtn.TextSize = 12
+		tabBtn.TextSize = 11
 		tabBtn.TextXAlignment = Enum.TextXAlignment.Left
 		tabBtn.AutoButtonColor = false
 		tabBtn.Parent = tabHolder
@@ -399,7 +457,7 @@ function Library:CreateWindow(config)
 		page.Parent = container
 
 		local pageLayout = Instance.new("UIListLayout")
-		pageLayout.Padding = UDim.new(0, 10)
+		pageLayout.Padding = UDim.new(0, 8)
 		pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		pageLayout.Parent = page
 
@@ -463,25 +521,24 @@ function Library:CreateWindow(config)
 			secLayout.Parent = secContainer
 
 			local function updateSecSize()
-				sectionFrame.Size = UDim2.new(1, 0, 0, secLayout.AbsoluteContentSize.Y + 36)
+				sectionFrame.Size = UDim2.new(1, 0, 0, secLayout.AbsoluteContentSize.Y + 34)
 			end
 			secLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSecSize)
 
 			---------------------------------------------------------
-			-- ELEMENTOS WIND UI
+			-- ELEMENTOS URBAN UI
 			---------------------------------------------------------
 			local SectionAPI = {}
 
-			-- 1. Button
 			function SectionAPI:AddButton(text, callback)
 				callback = callback or function() end
 				local btn = Instance.new("TextButton")
-				btn.Size = UDim2.new(1, 0, 0, 32)
+				btn.Size = UDim2.new(1, 0, 0, 30)
 				btn.BackgroundColor3 = Theme.Element
 				btn.Font = Enum.Font.GothamMedium
 				btn.Text = text
 				btn.TextColor3 = Theme.Text
-				btn.TextSize = 12
+				btn.TextSize = 11
 				btn.AutoButtonColor = false
 				btn.Parent = secContainer
 
@@ -497,13 +554,12 @@ function Library:CreateWindow(config)
 				end)
 			end
 
-			-- 2. Toggle
 			function SectionAPI:AddToggle(text, default, callback)
 				callback = callback or function() end
 				local toggled = default or false
 
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 32)
+				frame.Size = UDim2.new(1, 0, 0, 30)
 				frame.BackgroundColor3 = Theme.Element
 				frame.Parent = secContainer
 
@@ -518,7 +574,7 @@ function Library:CreateWindow(config)
 				label.Font = Enum.Font.GothamMedium
 				label.Text = text
 				label.TextColor3 = Theme.Text
-				label.TextSize = 12
+				label.TextSize = 11
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.Parent = frame
 
@@ -552,13 +608,12 @@ function Library:CreateWindow(config)
 				end)
 			end
 
-			-- 3. Slider
 			function SectionAPI:AddSlider(text, min, max, default, callback)
 				callback = callback or function() end
 				local val = math.clamp(default or min, min, max)
 
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 42)
+				frame.Size = UDim2.new(1, 0, 0, 38)
 				frame.BackgroundColor3 = Theme.Element
 				frame.Parent = secContainer
 
@@ -567,30 +622,30 @@ function Library:CreateWindow(config)
 				corner.Parent = frame
 
 				local label = Instance.new("TextLabel")
-				label.Size = UDim2.new(1, -50, 0, 20)
+				label.Size = UDim2.new(1, -50, 0, 18)
 				label.Position = UDim2.new(0, 10, 0, 2)
 				label.BackgroundTransparency = 1
 				label.Font = Enum.Font.GothamMedium
 				label.Text = text
 				label.TextColor3 = Theme.Text
-				label.TextSize = 12
+				label.TextSize = 11
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.Parent = frame
 
 				local valLabel = Instance.new("TextLabel")
-				valLabel.Size = UDim2.new(0, 40, 0, 20)
+				valLabel.Size = UDim2.new(0, 40, 0, 18)
 				valLabel.Position = UDim2.new(1, -48, 0, 2)
 				valLabel.BackgroundTransparency = 1
 				valLabel.Font = Enum.Font.GothamBold
 				valLabel.Text = tostring(val)
 				valLabel.TextColor3 = Theme.Accent
-				valLabel.TextSize = 11
+				valLabel.TextSize = 10
 				valLabel.TextXAlignment = Enum.TextXAlignment.Right
 				valLabel.Parent = frame
 
 				local track = Instance.new("TextButton")
-				track.Size = UDim2.new(1, -20, 0, 5)
-				track.Position = UDim2.new(0, 10, 0, 28)
+				track.Size = UDim2.new(1, -20, 0, 4)
+				track.Position = UDim2.new(0, 10, 0, 26)
 				track.BackgroundColor3 = Theme.Border
 				track.Text = ""
 				track.AutoButtonColor = false
@@ -634,12 +689,11 @@ function Library:CreateWindow(config)
 				end)
 			end
 
-			-- 4. TextBox
 			function SectionAPI:AddTextBox(text, placeholder, callback)
 				callback = callback or function() end
 
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 32)
+				frame.Size = UDim2.new(1, 0, 0, 30)
 				frame.BackgroundColor3 = Theme.Element
 				frame.Parent = secContainer
 
@@ -654,19 +708,19 @@ function Library:CreateWindow(config)
 				label.Font = Enum.Font.GothamMedium
 				label.Text = text
 				label.TextColor3 = Theme.Text
-				label.TextSize = 12
+				label.TextSize = 11
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.Parent = frame
 
 				local box = Instance.new("TextBox")
-				box.Size = UDim2.new(0.45, -10, 0, 22)
-				box.Position = UDim2.new(0.55, 0, 0.5, -11)
+				box.Size = UDim2.new(0.45, -10, 0, 20)
+				box.Position = UDim2.new(0.55, 0, 0.5, -10)
 				box.BackgroundColor3 = Theme.Background
 				box.Font = Enum.Font.Gotham
 				box.PlaceholderText = placeholder or "Digite..."
 				box.Text = ""
 				box.TextColor3 = Theme.Text
-				box.TextSize = 11
+				box.TextSize = 10
 				box.Parent = frame
 
 				local boxCorner = Instance.new("UICorner")
@@ -678,13 +732,12 @@ function Library:CreateWindow(config)
 				end)
 			end
 
-			-- 5. Dropdown
 			function SectionAPI:AddDropdown(text, list, callback)
 				callback = callback or function() end
 				local opened = false
 
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 32)
+				frame.Size = UDim2.new(1, 0, 0, 30)
 				frame.BackgroundColor3 = Theme.Element
 				frame.ClipsDescendants = true
 				frame.Parent = secContainer
@@ -694,29 +747,29 @@ function Library:CreateWindow(config)
 				corner.Parent = frame
 
 				local label = Instance.new("TextLabel")
-				label.Size = UDim2.new(1, -40, 0, 32)
+				label.Size = UDim2.new(1, -40, 0, 30)
 				label.Position = UDim2.new(0, 10, 0, 0)
 				label.BackgroundTransparency = 1
 				label.Font = Enum.Font.GothamMedium
 				label.Text = text .. ": " .. (list[1] or "Nenhum")
 				label.TextColor3 = Theme.Text
-				label.TextSize = 12
+				label.TextSize = 11
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.Parent = frame
 
 				local arrow = Instance.new("TextButton")
-				arrow.Size = UDim2.new(0, 32, 0, 32)
-				arrow.Position = UDim2.new(1, -32, 0, 0)
+				arrow.Size = UDim2.new(0, 30, 0, 30)
+				arrow.Position = UDim2.new(1, -30, 0, 0)
 				arrow.BackgroundTransparency = 1
 				arrow.Font = Enum.Font.GothamBold
 				arrow.Text = "▼"
 				arrow.TextColor3 = Theme.Accent
-				arrow.TextSize = 10
+				arrow.TextSize = 9
 				arrow.Parent = frame
 
 				local dropHolder = Instance.new("Frame")
 				dropHolder.Size = UDim2.new(1, -16, 0, 0)
-				dropHolder.Position = UDim2.new(0, 8, 0, 32)
+				dropHolder.Position = UDim2.new(0, 8, 0, 30)
 				dropHolder.BackgroundTransparency = 1
 				dropHolder.Parent = frame
 
@@ -726,12 +779,12 @@ function Library:CreateWindow(config)
 
 				for _, item in ipairs(list) do
 					local itemBtn = Instance.new("TextButton")
-					itemBtn.Size = UDim2.new(1, 0, 0, 24)
+					itemBtn.Size = UDim2.new(1, 0, 0, 22)
 					itemBtn.BackgroundColor3 = Theme.Background
 					itemBtn.Font = Enum.Font.Gotham
 					itemBtn.Text = item
 					itemBtn.TextColor3 = Theme.TextDark
-					itemBtn.TextSize = 11
+					itemBtn.TextSize = 10
 					itemBtn.Parent = dropHolder
 
 					local itemCorner = Instance.new("UICorner")
@@ -741,7 +794,7 @@ function Library:CreateWindow(config)
 					itemBtn.MouseButton1Click:Connect(function()
 						label.Text = text .. ": " .. item
 						opened = false
-						TweenService:Create(frame, tweenInfo, {Size = UDim2.new(1, 0, 0, 32)}):Play()
+						TweenService:Create(frame, tweenInfo, {Size = UDim2.new(1, 0, 0, 30)}):Play()
 						arrow.Text = "▼"
 						callback(item)
 					end)
@@ -749,19 +802,18 @@ function Library:CreateWindow(config)
 
 				arrow.MouseButton1Click:Connect(function()
 					opened = not opened
-					local targetH = opened and (38 + dropLayout.AbsoluteContentSize.Y) or 32
+					local targetH = opened and (36 + dropLayout.AbsoluteContentSize.Y) or 30
 					TweenService:Create(frame, tweenInfo, {Size = UDim2.new(1, 0, 0, targetH)}):Play()
 					arrow.Text = opened and "▲" or "▼"
 				end)
 			end
 
-			-- 6. Keybind
 			function SectionAPI:AddKeybind(text, defaultKey, callback)
 				callback = callback or function() end
 				local currKey = defaultKey or Enum.KeyCode.E
 
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 32)
+				frame.Size = UDim2.new(1, 0, 0, 30)
 				frame.BackgroundColor3 = Theme.Element
 				frame.Parent = secContainer
 
@@ -776,18 +828,18 @@ function Library:CreateWindow(config)
 				label.Font = Enum.Font.GothamMedium
 				label.Text = text
 				label.TextColor3 = Theme.Text
-				label.TextSize = 12
+				label.TextSize = 11
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.Parent = frame
 
 				local kBtn = Instance.new("TextButton")
-				kBtn.Size = UDim2.new(0, 60, 0, 20)
-				kBtn.Position = UDim2.new(1, -68, 0.5, -10)
+				kBtn.Size = UDim2.new(0, 60, 0, 18)
+				kBtn.Position = UDim2.new(1, -68, 0.5, -9)
 				kBtn.BackgroundColor3 = Theme.Background
 				kBtn.Font = Enum.Font.GothamBold
 				kBtn.Text = currKey.Name
 				kBtn.TextColor3 = Theme.Accent
-				kBtn.TextSize = 10
+				kBtn.TextSize = 9
 				kBtn.Parent = frame
 
 				local kCorner = Instance.new("UICorner")
@@ -811,10 +863,9 @@ function Library:CreateWindow(config)
 				end)
 			end
 
-			-- 7. Paragraph
 			function SectionAPI:AddParagraph(titleText, contentText)
 				local frame = Instance.new("Frame")
-				frame.Size = UDim2.new(1, 0, 0, 50)
+				frame.Size = UDim2.new(1, 0, 0, 46)
 				frame.BackgroundColor3 = Theme.Element
 				frame.Parent = secContainer
 
@@ -823,24 +874,24 @@ function Library:CreateWindow(config)
 				corner.Parent = frame
 
 				local pTitle = Instance.new("TextLabel")
-				pTitle.Size = UDim2.new(1, -16, 0, 18)
+				pTitle.Size = UDim2.new(1, -16, 0, 16)
 				pTitle.Position = UDim2.new(0, 8, 0, 4)
 				pTitle.BackgroundTransparency = 1
 				pTitle.Font = Enum.Font.GothamBold
 				pTitle.Text = titleText
 				pTitle.TextColor3 = Theme.Accent
-				pTitle.TextSize = 11
+				pTitle.TextSize = 10
 				pTitle.TextXAlignment = Enum.TextXAlignment.Left
 				pTitle.Parent = frame
 
 				local pDesc = Instance.new("TextLabel")
-				pDesc.Size = UDim2.new(1, -16, 0, 24)
-				pDesc.Position = UDim2.new(0, 8, 0, 22)
+				pDesc.Size = UDim2.new(1, -16, 0, 22)
+				pDesc.Position = UDim2.new(0, 8, 0, 20)
 				pDesc.BackgroundTransparency = 1
 				pDesc.Font = Enum.Font.Gotham
 				pDesc.Text = contentText
 				pDesc.TextColor3 = Theme.TextDark
-				pDesc.TextSize = 10
+				pDesc.TextSize = 9
 				pDesc.TextWrapped = true
 				pDesc.TextXAlignment = Enum.TextXAlignment.Left
 				pDesc.Parent = frame
