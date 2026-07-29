@@ -1,22 +1,22 @@
 -- ========================================================
--- URBAN UI LIBRARY v2.5 - EXEMPLO COMPLETO DE ABAS & ELEMENTOS
+-- URBAN UI LIBRARY v2.5 - EXEMPLO CORRIGIDO E FUNCIONAL
 -- Desenvolvido por: vortex_py
 -- ========================================================
 
--- 1. CARREGAMENTO DA BIBLIOTECA
+-- 1. CARREGAR A BIBLIOTECA
 local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/vortex-py/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
 
--- 2. NOTIFICAÇÃO INICIAL
+-- 2. NOTIFICAÇÃO DE INÍCIO
 WIND:Notify({
     Title = "Urban UI",
-    Content = "Biblioteca carregada com todas as opções de Abas!",
+    Content = "Interface e Abas carregadas com sucesso!",
     Duration = 4
 })
 
--- 3. CRIAR JANELA PRINCIPAL
+-- 3. CRIAR A JANELA PRINCIPAL
 local Window = WIND:CreateWindow({
     Title = "URBAN HUB",
-    SubTitle = "v2.5 Release • Gerenciamento Completo",
+    SubTitle = "v2.5 Release • Todos os Elementos",
     Size = UDim2.new(0, 520, 0, 380),
     Icon = "rbxassetid://80788381547970",
     FloatIcon = "rbxassetid://80788381547970",
@@ -24,118 +24,95 @@ local Window = WIND:CreateWindow({
 })
 
 -- ========================================================
--- TODAS AS FORMAS E RECURSOS DE ABAS (TABS)
+-- 1ª ABA: PRINCIPAL (Com Seção e Elementos)
 -- ========================================================
-
--- A) Criar Aba Simples
 local MainTab = Window:CreateTab("Principal")
+local SecMain = MainTab:AddSection("Controles Gerais")
 
--- B) Criar Aba com Ícone Personalizado
-local CombatTab = Window:CreateTab({
-    Title = "Combate",
-    Icon = "rbxassetid://10723415903" -- Suporta Asset IDs do Roblox
-})
+-- Parágrafo
+SecMain:AddParagraph("Status do Hub", "Seja bem-vindo ao Urban Hub! Todos os recursos estão ativos.")
 
--- C) Criar Aba Oculta/Dinâmica (Será mostrada via código depois)
-local SecretTab = Window:CreateTab({
-    Title = "Aba Secreta",
-    Icon = "rbxassetid://10723415903",
-    Visible = false -- Começa oculta
-})
-
--- D) Criar Aba de Configurações da UI
-local SettingsTab = Window:CreateTab("Configurações")
-
-
--- ========================================================
--- CONTEÚDO DA ABA PRINCIPAL (Gerenciador de Abas)
--- ========================================================
-local SecTabManager = MainTab:AddSection("Controle Dinâmico de Abas")
-
--- Trocar de Aba via Código (SelectTab)
-SecTabManager:AddButton("Ir para Aba de Combate", function()
-    CombatTab:Select() -- Força a navegação automática para a Aba Combate
+-- Botão Simples
+SecMain:AddButton("Teleportar ao Spawn", function()
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+        WIND:Notify({ Title = "Teleporte", Content = "Enviado ao Spawn!", Duration = 2 })
+    end
 end)
 
--- Exibir Aba Oculta em Tempo Real
-SecTabManager:AddButton("Revelar Aba Secreta", function()
-    SecretTab:SetVisible(true) -- Torna a aba visível na barra lateral
-    WIND:Notify({ Title = "Abas", Content = "Aba Secreta agora está visível!", Duration = 3 })
+-- Toggle / Chave Liga/Desliga
+local AutoFarm = SecMain:AddToggle("Auto Farm", false, function(state)
+    print("Auto Farm status:", state)
 end)
 
--- Esconder Aba Secreta Novamente
-SecTabManager:AddButton("Esconder Aba Secreta", function()
-    SecretTab:SetVisible(false) -- Oculta a aba da barra lateral
-end)
-
--- Seção de Elementos Padrão da Aba Principal
-local SecMainElements = MainTab:AddSection("Elementos Básicos")
-
-SecMainElements:AddParagraph("Nota sobre Pesquisa", "Você pode usar a barra de busca no topo para filtrar todas as abas criadas em tempo real.")
-
-local WalkSpeedSlider = SecMainElements:AddSlider("Velocidade", 16, 200, 16, function(value)
+-- Slider / Controle Numérico
+local SpeedSlider = SecMain:AddSlider("Velocidade do Personagem", 16, 200, 16, function(value)
     local char = game.Players.LocalPlayer.Character
     if char and char:FindFirstChild("Humanoid") then
         char.Humanoid.WalkSpeed = value
     end
 end)
 
-local AutoFarmToggle = SecMainElements:AddToggle("Auto Farm", false, function(state)
-    print("Auto Farm:", state)
+
+-- ========================================================
+-- 2ª ABA: SELEÇÕES E OPÇÕES
+-- ========================================================
+local OptionsTab = Window:CreateTab("Opções")
+local SecOptions = OptionsTab:AddSection("Entradas e Seleções")
+
+-- Dropdown Simples
+SecOptions:AddDropdown("Selecionar Modo", {"Modo Seguro", "Modo Rápido", "Modo Turbo"}, function(selected)
+    print("Modo escolhido:", selected)
+end)
+
+-- Multi-Dropdown
+SecOptions:AddMultiDropdown("Alvos Automaticos", {"Monstros", "Players", "Bosses"}, {"Monstros"}, function(selectedTable)
+    print("Alvos selecionados:")
+    for option, state in pairs(selectedTable) do
+        print(option, state)
+    end
+end)
+
+-- Caixa de Texto / Input
+SecOptions:AddTextBox("Nome do Jogador", "Digite o nome...", function(text)
+    print("Texto inserido:", text)
+end)
+
+-- ColorPicker / Seletor de Cor
+SecOptions:AddColorPicker("Cor do Efeito", Color3.fromRGB(99, 102, 241), function(color)
+    print("Cor alterada:", color)
+end)
+
+-- Keybind / Tecla de Atalho
+SecOptions:AddKeybind("Atalho de Ação", Enum.KeyCode.E, function(key)
+    print("Tecla pressionada:", key.Name)
 end)
 
 
 -- ========================================================
--- CONTEÚDO DA ABA DE COMBATE
+-- 3ª ABA: SISTEMA E GERENCIAMENTO DE ABAS
 -- ========================================================
-local SecCombat = CombatTab:AddSection("Funções de Aimbot & ESP")
+local SettingsTab = Window:CreateTab("Configurações")
+local SecSettings = SettingsTab:AddSection("Ações do Sistema")
 
-SecCombat:AddDropdown("Tipo de MIRA", {"Cabeça", "Torso", "Aleatório"}, function(selected)
-    print("Alvo selecionado:", selected)
+-- Trocar de Aba via Código
+SecSettings:AddButton("Voltar para Aba Principal", function()
+    MainTab:Select() -- Força a troca para a primeira aba
 end)
 
-SecCombat:AddMultiDropdown("Inimigos Afetados", {"Players", "NPCs", "Bosses"}, {"Players"}, function(selectedTable)
-    print("Tabela de alvos atualizada!")
-end)
-
-SecCombat:AddColorPicker("Cor da Caixa ESP", Color3.fromRGB(255, 0, 85), function(color)
-    print("Cor selecionada:", color)
-end)
-
-SecCombat:AddKeybind("Tecla de Ativação", Enum.KeyCode.E, function(key)
-    print("Atalho pressionado:", key.Name)
-end)
-
-
--- ========================================================
--- CONTEÚDO DA ABA SECRETA
--- ========================================================
-local SecSecret = SecretTab:AddSection("Recursos Especiais Ocultos")
-
-SecSecret:AddParagraph("Acesso Concedido", "Você liberou o conteúdo da aba secreta dinamicamente!")
-
-SecSecret:AddTextBox("Executar Comando Especial", "Digite aqui...", function(txt)
-    print("Comando recebido:", txt)
-end)
-
-
--- ========================================================
--- CONTEÚDO DA ABA DE CONFIGURAÇÕES & MODAIS
--- ========================================================
-local SecSystem = SettingsTab:AddSection("Opções e Janelas Pop-up")
-
--- Pop-up / Diálogo Modal de Confirmação (Window:Dialog)
-SecSystem:AddButton("Abrir Confirmação (Dialog)", function()
+-- Abrir Popup / Diálogo Modal
+SecSettings:AddButton("Abrir Confirmação (Dialog)", function()
     Window:Dialog({
-        Title = "Confirmar Reset",
-        Content = "Deseja restaurar as configurações da interface para o padrão?",
+        Title = "Resetar Opções",
+        Content = "Deseja redefinir a velocidade do personagem?",
         Buttons = {
             {
-                Title = "Confirmar",
+                Title = "Sim, Resetar",
                 Callback = function()
-                    WalkSpeedSlider:Set(16)
-                    AutoFarmToggle:Set(false)
-                    WIND:Notify({ Title = "Reset", Content = "Configurações restauradas!", Duration = 3 })
+                    SpeedSlider:Set(16)
+                    AutoFarm:Set(false)
+                    WIND:Notify({ Title = "Reset", Content = "Velocidade resetada para 16!", Duration = 3 })
                 end
             },
             {
@@ -146,11 +123,11 @@ SecSystem:AddButton("Abrir Confirmação (Dialog)", function()
     })
 end)
 
--- Minimizador e Fechamento
-SecSystem:AddButton("Ocultar / Minimizar UI", function()
+-- Minimizar e Descarregar UI
+SecSettings:AddButton("Minimizar UI", function()
     Window:Toggle()
 end)
 
-SecSystem:AddButton("Destruir Interface (Unload)", function()
+SecSettings:AddButton("Fechar UI Completamente (Unload)", function()
     Window:Destroy()
 end)
