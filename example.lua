@@ -1,133 +1,88 @@
--- ========================================================
--- URBAN UI LIBRARY v2.5 - EXEMPLO CORRIGIDO E FUNCIONAL
--- Desenvolvido por: vortex_py
--- ========================================================
-
--- 1. CARREGAR A BIBLIOTECA
 local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/vortex-py/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
 
--- 2. NOTIFICAÇÃO DE INÍCIO
-WIND:Notify({
-    Title = "Urban UI",
-    Content = "Interface e Abas carregadas com sucesso!",
-    Duration = 4
-})
-
--- 3. CRIAR A JANELA PRINCIPAL
+-- 1. Criar Janela Principal
 local Window = WIND:CreateWindow({
-    Title = "URBAN HUB",
-    SubTitle = "v2.5 Release • Todos os Elementos",
-    Size = UDim2.new(0, 520, 0, 380),
-    Icon = "rbxassetid://80788381547970",
-    FloatIcon = "rbxassetid://80788381547970",
-    FloatIconSize = 36
+	Title = "URBAN HUB",
+	SubTitle = "v2.5 Full Glass",
+	Size = UDim2.new(0, 520, 0, 350),
+	Icon = "rbxassetid://80788381547970",
+	FloatIcon = "rbxassetid://80788381547970",
+	FloatIconSize = 36 -- Aumenta o tamanho do ícone interno no botão redondo flutuante
 })
 
--- ========================================================
--- 1ª ABA: PRINCIPAL (Com Seção e Elementos)
--- ========================================================
+-- Notificação de Boas-Vindas
+WIND:Notify({
+	Title = "Urban UI V2.5",
+	Content = "Pesquisa, Diálogo e Perfil ativos!",
+	Duration = 4
+})
+
+-- 2. Criar Abas
 local MainTab = Window:CreateTab("Principal")
-local SecMain = MainTab:AddSection("Controles Gerais")
+local CombatTab = Window:CreateTab("Combate")
+local SettingsTab = Window:CreateTab("Ajustes")
 
--- Parágrafo
-SecMain:AddParagraph("Status do Hub", "Seja bem-vindo ao Urban Hub! Todos os recursos estão ativos.")
+---------------------------------------------------------
+-- ABA 1: PRINCIPAL (Testando o Diálogo)
+---------------------------------------------------------
+local SecDialog = MainTab:AddSection("Sistema de Diálogo")
 
--- Botão Simples
-SecMain:AddButton("Teleportar ao Spawn", function()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        char.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-        WIND:Notify({ Title = "Teleporte", Content = "Enviado ao Spawn!", Duration = 2 })
-    end
+SecDialog:AddButton("Testar Janela de Diálogo", function()
+	Window:Dialog({
+		Title = "Confirmar Ação",
+		Content = "Deseja realmente ativar o Auto Farm com as configurações atuais?",
+		Buttons = {
+			{
+				Title = "Confirmar",
+				Callback = function()
+					WIND:Notify({
+						Title = "Sucesso!",
+						Content = "Auto Farm iniciado com sucesso.",
+						Duration = 3
+					})
+				end
+			},
+			{
+				Title = "Cancelar",
+				Callback = function()
+					WIND:Notify({
+						Title = "Cancelado",
+						Content = "Ação de início cancelada.",
+						Duration = 3
+					})
+				end
+			}
+		}
+	})
 end)
 
--- Toggle / Chave Liga/Desliga
-local AutoFarm = SecMain:AddToggle("Auto Farm", false, function(state)
-    print("Auto Farm status:", state)
+SecDialog:AddToggle("Ativar Auto Farm", false, function(state)
+	print("Auto Farm:", state)
 end)
 
--- Slider / Controle Numérico
-local SpeedSlider = SecMain:AddSlider("Velocidade do Personagem", 16, 200, 16, function(value)
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = value
-    end
+---------------------------------------------------------
+-- ABA 2: COMBATE
+---------------------------------------------------------
+local SecAimbot = CombatTab:AddSection("Aimbot & Keybinds")
+
+SecAimbot:AddToggle("Ativar Lock", false, function(state)
+	print("Lock:", state)
 end)
 
-
--- ========================================================
--- 2ª ABA: SELEÇÕES E OPÇÕES
--- ========================================================
-local OptionsTab = Window:CreateTab("Opções")
-local SecOptions = OptionsTab:AddSection("Entradas e Seleções")
-
--- Dropdown Simples
-SecOptions:AddDropdown("Selecionar Modo", {"Modo Seguro", "Modo Rápido", "Modo Turbo"}, function(selected)
-    print("Modo escolhido:", selected)
+SecAimbot:AddKeybind("Tecla de Ativação", Enum.KeyCode.E, function(key)
+	print("Tecla pressionada:", key.Name)
 end)
 
--- Multi-Dropdown
-SecOptions:AddMultiDropdown("Alvos Automaticos", {"Monstros", "Players", "Bosses"}, {"Monstros"}, function(selectedTable)
-    print("Alvos selecionados:")
-    for option, state in pairs(selectedTable) do
-        print(option, state)
-    end
-end)
+---------------------------------------------------------
+-- ABA 3: AJUSTES
+---------------------------------------------------------
+local SecInfo = SettingsTab:AddSection("Recursos Ativos")
 
--- Caixa de Texto / Input
-SecOptions:AddTextBox("Nome do Jogador", "Digite o nome...", function(text)
-    print("Texto inserido:", text)
-end)
+SecInfo:AddParagraph("O que há de novo?", "• Barra de Pesquisa no topo do menu lateral para filtrar abas.\n• Foto e nome do seu jogador exibidos na base da UI.\n• Tamanho do ícone no botão redondo flutuante configurado para 36px.")
 
--- ColorPicker / Seletor de Cor
-SecOptions:AddColorPicker("Cor do Efeito", Color3.fromRGB(99, 102, 241), function(color)
-    print("Cor alterada:", color)
-end)
-
--- Keybind / Tecla de Atalho
-SecOptions:AddKeybind("Atalho de Ação", Enum.KeyCode.E, function(key)
-    print("Tecla pressionada:", key.Name)
-end)
-
-
--- ========================================================
--- 3ª ABA: SISTEMA E GERENCIAMENTO DE ABAS
--- ========================================================
-local SettingsTab = Window:CreateTab("Configurações")
-local SecSettings = SettingsTab:AddSection("Ações do Sistema")
-
--- Trocar de Aba via Código
-SecSettings:AddButton("Voltar para Aba Principal", function()
-    MainTab:Select() -- Força a troca para a primeira aba
-end)
-
--- Abrir Popup / Diálogo Modal
-SecSettings:AddButton("Abrir Confirmação (Dialog)", function()
-    Window:Dialog({
-        Title = "Resetar Opções",
-        Content = "Deseja redefinir a velocidade do personagem?",
-        Buttons = {
-            {
-                Title = "Sim, Resetar",
-                Callback = function()
-                    SpeedSlider:Set(16)
-                    AutoFarm:Set(false)
-                    WIND:Notify({ Title = "Reset", Content = "Velocidade resetada para 16!", Duration = 3 })
-                end
-            },
-            {
-                Title = "Cancelar",
-                Callback = function() end
-            }
-        }
-    })
-end)
-
--- Minimizar e Descarregar UI
-SecSettings:AddButton("Minimizar UI", function()
-    Window:Toggle()
-end)
-
-SecSettings:AddButton("Fechar UI Completamente (Unload)", function()
-    Window:Destroy()
+SecInfo:AddSlider("Velocidade de Movimento", 16, 200, 16, function(value)
+	local char = game.Players.LocalPlayer.Character
+	if char and char:FindFirstChild("Humanoid") then
+		char.Humanoid.WalkSpeed = value
+	end
 end)
