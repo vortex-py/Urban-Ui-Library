@@ -1,9 +1,10 @@
-local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/vortex-py/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
+local WIND = loadstring(game:HttpGet("https://pastebin.com/raw/eD5xVjpf"))()
 
--- 1. Criar Janela Principal
+-- 1. Criar Janela Principal (Com a nova Tag amarela ao lado do título)
 local Window = WIND:CreateWindow({
 	Title = "URBAN HUB",
 	SubTitle = "v2.5 Full Glass",
+	Tag = "BETA", -- Tag amarela do lado do título
 	Size = UDim2.new(0, 520, 0, 350),
 	Icon = "rbxassetid://80788381547970",
 	FloatIcon = "rbxassetid://80788381547970",
@@ -21,6 +22,7 @@ WIND:Notify({
 local MainTab = Window:CreateTab("Principal")
 local CombatTab = Window:CreateTab("Combate")
 local SettingsTab = Window:CreateTab("Ajustes")
+local NewTab = Window:CreateTab("Recursos Novos") -- Nova Aba Criada
 
 ---------------------------------------------------------
 -- ABA 1: PRINCIPAL (Testando o Diálogo)
@@ -84,5 +86,39 @@ SecInfo:AddSlider("Velocidade de Movimento", 16, 200, 16, function(value)
 	local char = game.Players.LocalPlayer.Character
 	if char and char:FindFirstChild("Humanoid") then
 		char.Humanoid.WalkSpeed = value
+	end
+end)
+
+---------------------------------------------------------
+-- ABA 4: RECURSOS NOVOS (Demonstração das novas funções)
+---------------------------------------------------------
+local SecControl = NewTab:AddSection("Controle da UI")
+
+-- Botão para Minimizar a Gui via script
+SecControl:AddButton("Minimizar GUI", function()
+	Window:Minimize()
+end)
+
+-- Botão para Destruir a Gui via script
+SecControl:AddButton("Destruir GUI", function()
+	Window:Destroy()
+end)
+
+local SecParagraph = NewTab:AddSection("Parágrafo Dinâmico & Servidor")
+
+-- Parágrafo que muda texto e título via script (Modo Teste)
+local DemoParagraph = SecParagraph:AddParagraph("Título Inicial", "Clique no botão abaixo para testar a alteração do texto!")
+
+SecParagraph:AddButton("Mudar Texto do Parágrafo", function()
+	DemoParagraph:Set("Título Alterado!", "O texto e o título do parágrafo foram atualizados com sucesso.")
+end)
+
+-- Parágrafo contador de segundos do servidor
+local ServerTimeParagraph = SecParagraph:AddParagraph("Tempo de Servidor", "Carregando tempo...")
+
+task.spawn(function()
+	while task.wait(1) do
+		local uptime = math.floor(workspace.DistributedGameTime)
+		ServerTimeParagraph:Set("Tempo do Servidor", "O servidor está online há: " .. tostring(uptime) .. " segundos.")
 	end
 end)
