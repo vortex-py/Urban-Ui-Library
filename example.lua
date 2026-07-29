@@ -1,4 +1,4 @@
-local WIND = loadstring(game:HttpGet("https://pastebin.com/raw/eD5xVjpf"))()
+local WIND = loadstring(game:HttpGet("https://raw.githubusercontent.com/vortex-py/Urban-Ui-Library/refs/heads/main/load-ui.lua"))()
 
 -- 1. Criar Janela Principal (Com a nova Tag amarela ao lado do título)
 local Window = WIND:CreateWindow({
